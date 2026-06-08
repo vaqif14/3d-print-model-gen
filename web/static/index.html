@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Print CAD Studio</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">3D Print CAD Studio</span>
+            </div>
+            <div class="header-actions">
+                <button id="btn-export-stl" class="btn btn-primary" disabled>Export STL</button>
+                <button id="btn-export-step" class="btn btn-secondary" disabled>Export STEP</button>
+                <button id="btn-branch" class="btn btn-ghost" disabled>Branch</button>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="app-body">
+            <!-- Left Panel: AI + Params -->
+            <aside class="panel panel-left">
+                <div class="panel-section">
+                    <h3>AI Design Engine</h3>
+                    <div class="ai-box">
+                        <textarea id="ai-prompt" placeholder="Describe your part... e.g. 'bracket for 10kg load, PETG, 60x40x25mm'"></textarea>
+                        <button id="btn-ai-generate" class="btn btn-primary btn-block">Generate</button>
+                    </div>
+                </div>
+
+                <div class="panel-section" id="image-section">
+                    <h3>Image to 3D</h3>
+                    <div id="image-dropzone" class="dropzone">
+                        <span>Drop image here or click to upload</span>
+                        <input type="file" id="image-input" accept="image/*" hidden>
+                    </div>
+                    <img id="image-preview" class="image-preview" style="display:none;">
+                    <div id="image-controls" style="display:none;">
+                        <div class="param-field">
+                            <label>Height Scale (mm)</label>
+                            <div class="slider-row">
+                                <input type="range" id="img-height" min="0.5" max="20" step="0.5" value="10">
+                                <span class="slider-value" id="img-height-val">10</span>
+                            </div>
+                        </div>
+                        <div class="param-field">
+                            <label>Base Thickness (mm)</label>
+                            <div class="slider-row">
+                                <input type="range" id="img-base" min="0" max="5" step="0.5" value="2">
+                                <span class="slider-value" id="img-base-val">2</span>
+                            </div>
+                        </div>
+                        <div class="param-field">
+                            <label>Smoothing (px)</label>
+                            <div class="slider-row">
+                                <input type="range" id="img-smooth" min="0" max="5" step="1" value="0">
+                                <span class="slider-value" id="img-smooth-val">0</span>
+                            </div>
+                        </div>
+                        <div class="param-field">
+                            <label><input type="checkbox" id="img-invert"> Invert Height</label>
+                        </div>
+                        <button id="btn-image-convert" class="btn btn-primary btn-block">Convert to 3D</button>
+                    </div>
+                </div>
+
+                <div class="panel-section" id="params-section" style="display:none;">
+                    <h3>Parametric Tweaks</h3>
+                    <div id="param-form"></div>
+                    <button id="btn-regenerate" class="btn btn-primary btn-block">Update Model</button>
+                </div>
+
+                <div class="panel-section" id="estimates-section" style="display:none;">
+                    <h3>Estimates</h3>
+                    <div class="estimate-grid">
+                        <div class="estimate-item">
+                            <span class="estimate-label">Weight</span>
+                            <span class="estimate-value" id="est-weight">-</span>
+                        </div>
+                        <div class="estimate-item">
+                            <span class="estimate-label">Cost</span>
+                            <span class="estimate-value" id="est-cost">-</span>
+                        </div>
+                        <div class="estimate-item">
+                            <span class="estimate-label">Time</span>
+                            <span class="estimate-value" id="est-time">-</span>
+                        </div>
+                        <div class="estimate-item">
+                            <span class="estimate-label">Volume</span>
+                            <span class="estimate-value" id="est-volume">-</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center: 3D Viewer -->
+            <main class="viewer-container">
+                <div id="viewer"></div>
+                <div class="viewer-overlay">
+                    <div class="viewer-hint">Drag to rotate · Scroll to zoom · Right-click to pan</div>
+                    <div id="viewer-status" class="viewer-status">Ready</div>
+                </div>
+            </main>
+
+            <!-- Right Panel: History + Validation -->
+            <aside class="panel panel-right">
+                <div class="panel-section">
+                    <h3>Design History</h3>
+                    <div id="history-tree" class="history-tree"></div>
+                    <button id="btn-new-branch" class="btn btn-ghost btn-sm">+ New Branch</button>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Validation</h3>
+                    <div id="validation-results" class="validation-list">
+                        <div class="validation-placeholder">Generate a model to see validation</div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Material</h3>
+                    <div id="material-info" class="material-card">
+                        <div class="material-name">-</div>
+                        <div class="material-temps">
+                            <span id="mat-nozzle">-</span>
+                            <span id="mat-bed">-</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script type="module" src="/static/js/viewer.js?v=2"></script>
+    <script type="module" src="/static/js/params.js?v=2"></script>
+    <script type="module" src="/static/js/history.js?v=2"></script>
+    <script type="module" src="/static/js/app.js?v=2"></script>
+</body>
+</html>

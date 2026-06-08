@@ -1,0 +1,6 @@
+trimesh[easy]>=4.0
+numpy>=1.24
+scipy>=1.10
+scikit-image>=0.21
+shapely>=2.0
+manifold3d>=3.0
