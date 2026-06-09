@@ -1,5 +1,6 @@
 """FastAPI entry point for the 3D CAD Studio."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -15,7 +16,7 @@ app = FastAPI(title="3D Print CAD Studio", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -48,4 +49,5 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=False)
